@@ -1,4 +1,23 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
+
+LABEL maintainer="huaxlin <featureoverload@gmail.com>"
+
+ENV TZ=Asia/Shanghai
+
+RUN sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list \
+ && sed -i 's/security.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list \
+ && sed -i 's/ports.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list \
+ && apt update -y
+
+RUN apt install python3-pip -y
+
+ARG PyPI_HOST=pypi.tuna.tsinghua.edu.cn
+ARG PyPI_REPO=https://${PyPI_HOST}/simple
+RUN echo "[global]" > /etc/pip.conf \
+ && echo "timeout = 120" >> /etc/pip.conf \
+ && echo "index-url = ${PyPI_REPO}" >> /etc/pip.conf \
+ && echo "trusted-host = ${PyPI_HOST}" >> /etc/pip.conf
+
 
 LABEL name="httpbin"
 LABEL version="0.9.2"
@@ -7,16 +26,12 @@ LABEL org.kennethreitz.vendor="Kenneth Reitz"
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
-
-RUN apt update -y && apt install python3-pip git -y && pip3 install --no-cache-dir pipenv
-
-ADD Pipfile Pipfile.lock /httpbin/
-WORKDIR /httpbin
-RUN /bin/bash -c "pip3 install --no-cache-dir -r <(pipenv lock -r)"
+EXPOSE 80
 
 ADD . /httpbin
-RUN pip3 install --no-cache-dir /httpbin
 
-EXPOSE 80
+RUN pip3 install --no-cache-dir "gunicorn~=20.1.0" \
+ && pip3 install --no-cache-dir -r /httpbin/requirements.txt
+RUN pip3 install --no-cache-dir /httpbin
 
 CMD ["gunicorn", "-b", "0.0.0.0:80", "httpbin:app", "-k", "gevent"]

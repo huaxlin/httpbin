@@ -1,10 +1,18 @@
-from setuptools import setup, find_packages
 import os
 import io
+from pkg_resources import parse_requirements
+from pathlib import Path
+from setuptools import setup, find_packages
 
 
 with open(os.path.join(os.path.realpath(os.path.dirname(__file__)), 'httpbin', 'VERSION')) as version_file:
     version = version_file.read().strip()
+
+def parse_requirements_file(f):
+    return [str(req) for req in parse_requirements(Path(f).read_text())]
+
+install_requires = parse_requirements_file('requirements.txt')
+
 
 setup(
     name="httpbin",
@@ -28,14 +36,9 @@ setup(
          'Natural Language :: English',
          'License :: OSI Approved :: MIT License',
          'Programming Language :: Python',
-         'Programming Language :: Python :: 2.7',
-         'Programming Language :: Python :: 3.6',
     ],
     test_suite="test_httpbin",
     packages=find_packages(),
     include_package_data = True, # include files listed in MANIFEST.in
-    install_requires=[
-        'Flask', 'MarkupSafe', 'decorator', 'itsdangerous', 'six', 'brotlipy',
-        'raven[flask]', 'werkzeug>=0.14.1', 'gevent', 'flasgger'
-    ],
+    install_requires=install_requires,
 )
