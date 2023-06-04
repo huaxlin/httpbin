@@ -1,13 +1,6 @@
-FROM ubuntu:22.04
+FROM huaxlin/ubuntu:22.04-CN
 
 LABEL maintainer="huaxlin <featureoverload@gmail.com>"
-
-ENV TZ=Asia/Shanghai
-
-RUN sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list \
- && sed -i 's/security.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list \
- && sed -i 's/ports.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list \
- && apt update -y
 
 RUN apt install python3-pip -y
 
